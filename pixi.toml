@@ -1,0 +1,87 @@
+[project]
+name = "mujoco-urdf-package-uri"
+# This version is intentionally wrong, as pixi does not
+# use the version at all, it does not make sense to complexify
+# the CMake to read the version from here, or to duplicate the places
+# where we keep the version
+version = "0.0.0"
+description = "MuJoCo's Resource provider to load assets via package:// URIs."
+authors = ["Silvio Traversaro <silvio@traversaro.it>"]
+channels = ["conda-forge", "robostack-staging"]
+platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
+
+[tasks]
+# Download fork of mujoco with modifications for stopping stripping of URDF path
+download_mujoco = { cmd = ["git", "clone", "-b", "fix1432", "https://github.com/traversaro/mujoco"] }
+configure_mujoco = { cmd = "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -GNinja -S ./mujoco -B .build_mujoco" }
+build_mujoco_cxx = { cmd = "cmake --build .build_mujoco --config Release", depends_on = ["configure_mujoco"] }
+install_mujoco_cxx = { cmd = "cmake --install .build_mujoco --config Release", depends_on = ["build_mujoco_cxx"] }
+make_sdist_mujoco_python = { cmd = "bash ./mujoco/python/make_sdist.sh", depends_on = ["install_mujoco_cxx"] }
+install_mujoco = { cmd = "MUJOCO_PATH=$CONDA_PREFIX MUJOCO_PLUGIN_PATH=$CONDA_PREFIX/bin/mujoco_plugin python -m pip install --no-deps ./mujoco/python/dist/mujoco-*.tar.gz", depends_on = ["make_sdist_mujoco_python"] }
+
+
+
+
+# Configures CMake
+configure = { cmd = [
+    "cmake",
+    "-DCMAKE_BUILD_TYPE=Release",
+    # Workaround until CMake https://gitlab.kitware.com/cmake/cmake/-/merge_requests/9200
+    # is released
+    "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
+    # Use the cross-platform Ninja generator
+    "-G",
+    "Ninja",
+    # The source is in the root directory
+    "-S",
+    ".",
+    # We wanna build in the .build directory
+    "-B",
+    ".build",
+]}
+
+
+build = { cmd = ["cmake", "--build", ".build", "--config", "Release"], depends_on = ["configure"] }
+install = { cmd = ["cmake", "--install", ".build", "--config", "Release"], depends_on = ["build"] }
+example_panda = { cmd = ["python", "./examples/example.py", "package://moveit_resources_panda_description/urdf/panda.urdf"], depends_on = ["install"] }
+example_icub = { cmd = ["python", "./examples/example.py", "package://iCub/robots/iCubGazeboV2_7/model.urdf"], depends_on = ["install"] }
+uninstall = { cmd = ["cmake", "--build", ".build", "--target", "uninstall"], depends_on = ["build"] }
+
+
+[dependencies]
+icub-models = "*"
+compilers = "*"
+pybind11 = "*"
+pkg-config = "*"
+cmake = "*"
+make = "*"
+ninja = "*"
+resolve-robotics-uri-py = "*"
+manifpy = ">=0.0.4,<0.1"
+absl-py = ">=2.1.0,<2.2"
+python-build = ">=1.0.3,<1.1"
+pip = ">=24.0,<25"
+glfw = ">=3.4,<4"
+pyglfw = ">=2.7.0,<2.8"
+clang-format = ">=17.0.6,<17.1"
+ros-humble-moveit-resources-panda-description = ">=2.0.6,<2.1"
+
+# opengl cdt is required by mujoco only on linux
+[target.linux-64.host-dependencies]
+# Use older version of gcc to avoid Werror of mujoco to fail
+compilers = "1.5.0"
+mesa-dri-drivers-cos7-x86_64 = "*"
+mesa-libgl-devel-cos7-x86_64 = "*"
+libxext-cos7-x86_64 = "*"
+libselinux-cos7-x86_64 = "*"
+libxdamage-cos7-x86_64 = "*"
+libxxf86vm-cos7-x86_64 = "*"
+xorg-libxfixes = "*"
+# glfw3 dependencies
+xorg-libx11= "*"
+xorg-libxrandr = "*"
+xorg-libxinerama = "*"
+xorg-libxcursor = "*"
+xorg-libxi = "*"
+libxkbcommon = "*"
+wayland = "*"
