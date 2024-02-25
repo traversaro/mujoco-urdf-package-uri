@@ -80,8 +80,6 @@ bool getFilePath(const std::string& filename,
 }
 
 int mupu_open_callback(mjResource* resource) {
-  fprintf(stderr, "mupu_open_callback  with %s \n", resource->name);
-
   if (!resource || !resource->name) {
     return 0;
   }
@@ -135,8 +133,6 @@ int mupu_open_callback(mjResource* resource) {
     return 0;
   } else {
     // At this point, we can read the file and add it in the buffer
-    fprintf(stderr, "The real path of %s is %s.", resource->name, realAbsoluteFileName.c_str());
-
     resource->data = calloc(1, sizeof(mupu_openedFileData));
 
     // Open the file
@@ -169,8 +165,6 @@ int mupu_open_callback(mjResource* resource) {
 }
 
 int mupu_read_callback(mjResource * resource, const void** buffer) {
-  fprintf(stderr, "mupu_read_callback  with %s \n", resource->name);
-
   if (!resource || !resource->name || !resource->data) {
     *buffer = NULL;
     return -1;
@@ -184,8 +178,6 @@ int mupu_read_callback(mjResource * resource, const void** buffer) {
 }
 
 void mupu_close_callback(mjResource * resource) {
-  fprintf(stderr, "mupu_close_callback  with %s \n", resource->name);
-
   if (resource->data) {
     mupu_openedFileData* dataAndSize = (mupu_openedFileData*)resource->data; 
 

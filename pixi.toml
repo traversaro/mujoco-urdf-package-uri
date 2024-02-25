@@ -11,16 +11,15 @@ channels = ["conda-forge", "robostack-staging"]
 platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
 
 [tasks]
+
 # Download fork of mujoco with modifications for stopping stripping of URDF path
-download_mujoco = { cmd = ["git", "clone", "-b", "fix1432", "https://github.com/traversaro/mujoco"] }
-configure_mujoco = { cmd = "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -GNinja -S ./mujoco -B .build_mujoco" }
-build_mujoco_cxx = { cmd = "cmake --build .build_mujoco --config Release", depends_on = ["configure_mujoco"] }
-install_mujoco_cxx = { cmd = "cmake --install .build_mujoco --config Release", depends_on = ["build_mujoco_cxx"] }
-make_sdist_mujoco_python = { cmd = "bash ./mujoco/python/make_sdist.sh", depends_on = ["install_mujoco_cxx"] }
-install_mujoco = { cmd = "MUJOCO_PATH=$CONDA_PREFIX MUJOCO_PLUGIN_PATH=$CONDA_PREFIX/bin/mujoco_plugin python -m pip install --no-deps ./mujoco/python/dist/mujoco-*.tar.gz", depends_on = ["make_sdist_mujoco_python"] }
-
-
-
+# Unused as now we are able to use stock mujoco
+# download_mujoco = { cmd = ["git", "clone", "-b", "fix1432", "https://github.com/traversaro/mujoco"] }
+# configure_mujoco = { cmd = "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -GNinja -S ./mujoco -B .build_mujoco" }
+# build_mujoco_cxx = { cmd = "cmake --build .build_mujoco --config Release", depends_on = ["configure_mujoco"] }
+# install_mujoco_cxx = { cmd = "cmake --install .build_mujoco --config Release", depends_on = ["build_mujoco_cxx"] }
+# make_sdist_mujoco_python = { cmd = "bash ./mujoco/python/make_sdist.sh", depends_on = ["install_mujoco_cxx"] }
+# install_mujoco = { cmd = "MUJOCO_PATH=$CONDA_PREFIX MUJOCO_PLUGIN_PATH=$CONDA_PREFIX/bin/mujoco_plugin python -m pip install --no-deps ./mujoco/python/dist/mujoco-*.tar.gz", depends_on = ["make_sdist_mujoco_python"] }
 
 # Configures CMake
 configure = { cmd = [
@@ -65,6 +64,7 @@ glfw = ">=3.4,<4"
 pyglfw = ">=2.7.0,<2.8"
 clang-format = ">=17.0.6,<17.1"
 ros-humble-moveit-resources-panda-description = ">=2.0.6,<2.1"
+mujoco = ">=3.1.2,<3.2"
 
 # opengl cdt is required by mujoco only on linux
 [target.linux-64.host-dependencies]
